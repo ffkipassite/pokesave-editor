@@ -35,6 +35,19 @@ jobs:
           cp custom/src/PKHeX.Web/wwwroot/index.html _upstream/src/PKHeX.Web/wwwroot/index.html
           cp custom/src/PKHeX.Web/wwwroot/css/app.css _upstream/src/PKHeX.Web/wwwroot/css/app.css
           cp custom/src/PKHeX.Web/Services/EditorConfigService.cs _upstream/src/PKHeX.Web/Services/EditorConfigService.cs
+
+          python3 - <<'PY2'
+          from pathlib import Path
+          p = Path("_upstream/src/PKHeX.Web/Program.cs")
+          text = p.read_text(encoding="utf-8-sig")
+          marker = "builder.Services.AddScoped<EditorConfigService>();"
+          if marker not in text:
+              anchor = "builder.Services.AddScoped<GameService>();"
+              if anchor not in text:
+                  raise SystemExit("Could not find GameService registration anchor")
+              text = text.replace(anchor, marker + "\n" + anchor, 1)
+              p.write_text(text, encoding="utf-8")
+          PY2
           mkdir -p _upstream/src/PKHeX.Web/wwwroot/admin
           cp -a custom/src/PKHeX.Web/wwwroot/admin/. _upstream/src/PKHeX.Web/wwwroot/admin/
           cp custom/.htaccess _upstream/src/PKHeX.Web/wwwroot/.htaccess
