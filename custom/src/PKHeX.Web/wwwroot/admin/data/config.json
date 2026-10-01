@@ -1,0 +1,21 @@
+{
+  "siteName": "PokéSave Editor",
+  "headerText": "PokéSave Editor",
+  "footerText": "Browser-based Pokémon save editing",
+  "logoUrl": "",
+  "faviconUrl": "",
+  "primaryColor": "#5b4cf6",
+  "primaryHoverColor": "#4538d2",
+  "buttonColor": "#5b4cf6",
+  "buttonHoverColor": "#4538d2",
+  "backgroundColor": "#f5f7fb",
+  "surfaceColor": "#ffffff",
+  "textColor": "#111827",
+  "mutedColor": "#667085",
+  "borderColor": "#e5e7eb",
+  "showPlugins": true,
+  "showAnalytics": true,
+  "showSave": true,
+  "showOpen": true,
+  "showSource": false
+}

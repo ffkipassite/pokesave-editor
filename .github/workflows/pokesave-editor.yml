@@ -25,7 +25,7 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Apply PokéSave Editor UI
+      - name: Apply PokéSave Editor UI and navigation
         shell: bash
         run: |
           set -euo pipefail
@@ -34,9 +34,12 @@ jobs:
           cp custom/src/PKHeX.Web/Layout/MainLayout.razor _upstream/src/PKHeX.Web/Layout/MainLayout.razor
           cp custom/src/PKHeX.Web/wwwroot/index.html _upstream/src/PKHeX.Web/wwwroot/index.html
           cp custom/src/PKHeX.Web/wwwroot/css/app.css _upstream/src/PKHeX.Web/wwwroot/css/app.css
+          cp custom/src/PKHeX.Web/Services/EditorConfigService.cs _upstream/src/PKHeX.Web/Services/EditorConfigService.cs
+          mkdir -p _upstream/src/PKHeX.Web/wwwroot/admin
+          cp -a custom/src/PKHeX.Web/wwwroot/admin/. _upstream/src/PKHeX.Web/wwwroot/admin/
           cp custom/.htaccess _upstream/src/PKHeX.Web/wwwroot/.htaccess
 
-      - name: Configure /saveeditor/ base path
+      - name: Configure relative base path
         working-directory: _upstream
         shell: bash
         run: |
@@ -86,11 +89,16 @@ jobs:
 
           index = Path("src/PKHeX.Web/wwwroot/index.html")
           text = index.read_text(encoding="utf-8-sig")
-          text = text.replace('<base href="/"/>', '<base href="/saveeditor/"/>')
+          text = text.replace('<base href="/"/>', '<base href="./"/>')
+          text = text.replace('<base href="/saveeditor/"/>', '<base href="./"/>')
           text = text.replace('href="/favicon.svg"', 'href="favicon.svg"')
           index.write_text(text, encoding="utf-8")
           PY
-          echo "Configured Blazor base path: /saveeditor/"
+          echo "Configured Blazor base path: relative ./ (auto-detects install folder)"
+          grep -q "href="plugins"" ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
+          grep -q "href="analytics"" ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
+          grep -q "href="save"" ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
+          echo "Verified Plugins, Analytics and Save navigation."
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4

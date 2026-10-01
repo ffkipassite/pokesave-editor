@@ -1,55 +1,82 @@
 @inherits LayoutComponentBase
+@using PKHeX.Web.Services.Plugins
+@using PKHeX.Web.Services
 @implements IDisposable
 @inject NavigationManager Navigation
 @inject GameService GameService
+@inject EditorConfigService EditorConfig
+
+<PageTitle>@EditorConfig.Current.SiteName</PageTitle>
 
 <div class="app-shell">
+    <style>
+        :root {
+            --editor-bg: @EditorConfig.Current.BackgroundColor;
+            --editor-surface: @EditorConfig.Current.SurfaceColor;
+            --editor-text: @EditorConfig.Current.TextColor;
+            --editor-muted: @EditorConfig.Current.MutedColor;
+            --editor-border: @EditorConfig.Current.BorderColor;
+            --editor-accent: @EditorConfig.Current.PrimaryColor;
+            --editor-accent-dark: @EditorConfig.Current.PrimaryHoverColor;
+            --editor-button: @EditorConfig.Current.ButtonColor;
+            --editor-button-hover: @EditorConfig.Current.ButtonHoverColor;
+        }
+    </style>
     <header class="topbar">
         <a class="brand" href="./">
-            <span class="brand-symbol">✦</span>
-            <span>PokéSave <em>Editor</em></span>
+            @if (!string.IsNullOrWhiteSpace(EditorConfig.Current.LogoUrl))
+            {
+                <img class="brand-logo" src="@ResolveAsset(EditorConfig.Current.LogoUrl)" alt="" />
+            }
+            else
+            {
+                <span class="brand-symbol">✦</span>
+            }
+            <span>@EditorConfig.Current.HeaderText</span>
         </a>
 
-        @if (GameService.IsLoaded)
-        {
-            <nav class="topnav">
-                <a href="./">Overview</a>
-                <a href="party">Party</a>
-                <a href="pokemon-box">Boxes</a>
-                <a href="items">Items</a>
-                <a href="load">Open</a>
-            </nav>
-        }
+        <nav class="topnav" aria-label="Editor navigation">
+            <a href="./">Overview</a>
+            <a href="party">Party</a>
+            <a href="pokemon-box">Boxes</a>
+            <a href="items">Items</a>
+            @if (EditorConfig.Current.ShowPlugins) { <a href="plugins">Plugins</a> }
+            @if (EditorConfig.Current.ShowAnalytics) { <a href="analytics">Analytics</a> }
+            @if (EditorConfig.Current.ShowSave) { <a class="save-nav" href="save">Save</a> }
+            @if (EditorConfig.Current.ShowOpen) { <a href="load">Open</a> }
+        </nav>
 
         <div class="topbar-spacer"></div>
-        <a class="github-link" href="https://github.com/arleypadua/PKHeX.Everywhere" target="_blank" rel="noopener">Source</a>
+        @if (EditorConfig.Current.ShowSource)
+        {
+            <a class="github-link" href="https://github.com/arleypadua/PKHeX.Everywhere" target="_blank" rel="noopener">Source</a>
+        }
     </header>
 
+    @if (GameService.IsLoaded)
+    {
+        <div class="game-status-bar"><span class="status-dot"></span><span>Save loaded</span></div>
+    }
+
     <main class="app-content">
-        <AnalyticsAwareErrorBoundary @ref="_errorBoundary">
-            <ChildContent>
-                @Body
-            </ChildContent>
-            <ErrorContent>
-                <div class="editor-error">
-                    <h2>Something went wrong</h2>
-                    <p>The editor could not complete that operation. Try reopening the save file.</p>
-                    <button @onclick="DismissError">Dismiss</button>
-                </div>
-            </ErrorContent>
-        </AnalyticsAwareErrorBoundary>
+        @Body
     </main>
 
     <footer class="app-footer">
-        <span>PokéSave Editor</span>
-        <span>Browser-based Pokémon save editing</span>
+        <span>@EditorConfig.Current.SiteName</span>
+        <span>@EditorConfig.Current.FooterText</span>
     </footer>
 </div>
 
 @code {
-    private AnalyticsAwareErrorBoundary _errorBoundary = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        await EditorConfig.LoadAsync();
+        StateHasChanged();
+    }
 
-    private void DismissError() => _errorBoundary.Recover();
+    private string ResolveAsset(string path)
+        => string.IsNullOrWhiteSpace(path) ? string.Empty : new Uri(new Uri(Navigation.BaseUri), path.TrimStart('/')).ToString();
 
     public void Dispose() { }
 }

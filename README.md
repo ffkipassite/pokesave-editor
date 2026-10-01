@@ -1,19 +1,7 @@
-# PokéSave Editor
+# PokéSave Editor v5
 
-A branded web build of [PKHeX Everywhere](https://github.com/arleypadua/PKHeX.Everywhere).
+Browser-based Pokémon save editor based on PKHeX Everywhere.
 
-## Important build design
+This version keeps the original Plugins, Analytics, and Save navigation visible throughout the editor while using the /saveeditor/ deployment base path.
 
-The GitHub Actions workflow builds against the upstream PKHeX Everywhere repository and its compatible Git submodules. This avoids dependency mismatches caused by uploading Git submodules as ordinary ZIP folders.
-
-The `custom/` directory contains the PokéSave Editor UI overlay used during the build.
-
-## Deployment
-
-GitHub Actions produces a `pokesave-editor-site` artifact containing the static Blazor WebAssembly website. Extract its contents directly into the DirectAdmin document root. `index.html` must be in the document root.
-
-The included `.htaccess` provides SPA fallback routing for Apache/LiteSpeed hosting.
-
-## License
-
-PKHeX Everywhere is licensed under GPL-3.0-or-later. See `LICENSE` and the upstream repository for details.
+Builds are produced by GitHub Actions and the published `wwwroot` is ready for static hosting such as DirectAdmin.
