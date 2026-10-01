@@ -123,6 +123,17 @@ jobs:
         with:
           node-version: 22
 
+      - name: Build React page assets
+        working-directory: _upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd src/PKHeX.Web.React
+          npm ci
+          npm run build
+          test -f ../PKHeX.Web/wwwroot/react/pages.js
+          echo "Verified React page bundle: src/PKHeX.Web/wwwroot/react/pages.js"
+
       - name: Build JavaScript assets
         working-directory: _upstream
         shell: bash
@@ -155,7 +166,9 @@ jobs:
           set -euo pipefail
           test -f publish/wwwroot/index.html
           test -d publish/wwwroot/_framework
+          test -f publish/wwwroot/react/pages.js
           test -f publish/wwwroot/.htaccess
+          echo "Verified React page bundle: publish/wwwroot/react/pages.js"
           echo "PokéSave Editor website is ready."
 
       - name: Upload DirectAdmin-ready website
