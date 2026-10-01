@@ -28,7 +28,7 @@
             <span>No account required</span>
         </div>
 
-        <a href="/" class="back-link">← Back to home</a>
+        <a href="./" class="back-link">← Back to home</a>
     </div>
 </div>
 
@@ -38,7 +38,7 @@
     protected override void OnInitialized()
     {
         if (GameService.IsLoaded)
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("./");
     }
 
     private async Task OpenFilePickerAsync()
@@ -52,7 +52,7 @@
         {
             await e.File.OpenReadStream(6 * 1024 * 1000).CopyToAsync(ms);
             GameService.Load(ms.ToArray(), e.File.Name);
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("./");
         }
         catch (GameNotLoadedException)
         {

@@ -1,11 +1,11 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @implements IDisposable
 @inject NavigationManager Navigation
 @inject GameService GameService
 
 <div class="app-shell">
     <header class="topbar">
-        <a class="brand" href="/">
+        <a class="brand" href="./">
             <span class="brand-symbol">✦</span>
             <span>PokéSave <em>Editor</em></span>
         </a>
@@ -13,11 +13,11 @@
         @if (GameService.IsLoaded)
         {
             <nav class="topnav">
-                <a href="/">Overview</a>
-                <a href="/party">Party</a>
-                <a href="/pokemon-box">Boxes</a>
-                <a href="/items">Items</a>
-                <a href="/load">Open</a>
+                <a href="./">Overview</a>
+                <a href="party">Party</a>
+                <a href="pokemon-box">Boxes</a>
+                <a href="items">Items</a>
+                <a href="load">Open</a>
             </nav>
         }
 

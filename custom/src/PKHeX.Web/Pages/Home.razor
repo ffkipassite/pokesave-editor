@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using PKHeX.Core
 @using PKHeX.Core
 @inject GameService GameService
@@ -44,17 +44,17 @@ else
         <InputFile OnChange="LoadSave" @ref="_inputGameFile" class="hidden-file-input" />
 
         <section class="editor-grid">
-            <a class="editor-card" href="/party">
+            <a class="editor-card" href="party">
                 <div class="card-icon">👥</div>
                 <div><strong>Party</strong><span>Edit your active Pokémon party</span></div>
                 <b>→</b>
             </a>
-            <a class="editor-card" href="/pokemon-box">
+            <a class="editor-card" href="pokemon-box">
                 <div class="card-icon">📦</div>
                 <div><strong>Pokémon Boxes</strong><span>Browse and edit stored Pokémon</span></div>
                 <b>→</b>
             </a>
-            <a class="editor-card" href="/items">
+            <a class="editor-card" href="items">
                 <div class="card-icon">🎒</div>
                 <div><strong>Items</strong><span>Manage your save inventory</span></div>
                 <b>→</b>
@@ -92,11 +92,11 @@ else
         try
         {
             GameService.Load(ms.ToArray(), e.File.Name);
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("./");
         }
         catch (GameNotLoadedException)
         {
-            Navigation.NavigateTo("/load");
+            Navigation.NavigateTo("load");
         }
     }
 
