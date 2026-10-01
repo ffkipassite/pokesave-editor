@@ -4,6 +4,7 @@
 @inject GameService GameService
 @inject JsService Js
 @inject EditorConfigService EditorConfig
+@inject INotificationService Notification
 
 <PageTitle>Open Save File — @EditorConfig.Current.SiteName</PageTitle>
 
@@ -53,6 +54,12 @@
         {
             await e.File.OpenReadStream(6 * 1024 * 1000).CopyToAsync(ms);
             GameService.Load(ms.ToArray(), e.File.Name);
+            _ = Notification.Open(new NotificationConfig
+            {
+                Message = "Save loaded",
+                Description = e.File.Name,
+                NotificationType = NotificationType.Success
+            });
             Navigation.NavigateTo("./");
         }
         catch (GameNotLoadedException)

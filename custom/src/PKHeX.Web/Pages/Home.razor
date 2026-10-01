@@ -5,6 +5,7 @@
 @inject NavigationManager Navigation
 @inject JsService Js
 @inject EditorConfigService EditorConfig
+@inject INotificationService Notification
 
 <PageTitle>@EditorConfig.Current.SiteName</PageTitle>
 
@@ -32,7 +33,7 @@ else
     var game = GameService.LoadedGame;
     <div class="editor-dashboard">
         <section class="dashboard-header">
-            <div><span class="eyebrow">SAVE LOADED</span><h1>@GameService.FileName</h1><p>@game.GameVersionApproximation.Name</p></div>
+            <div><h1>@GameService.FileName</h1><p>@game.GameVersionApproximation.Name</p></div>
             <div class="dashboard-actions">
                 <Button Type="@ButtonType.Primary" Icon="@IconType.Outline.Export" OnClick="ExportSaveAsync">Download Save</Button>
                 <Button Icon="@IconType.Outline.FolderOpen" OnClick="OpenFilePickerAsync">Open Another</Button>
@@ -56,7 +57,14 @@ else
     {
         using MemoryStream ms = new();
         await e.File.OpenReadStream(6 * 1024 * 1000).CopyToAsync(ms);
-        try { GameService.Load(ms.ToArray(), e.File.Name); Navigation.NavigateTo("./"); }
+        try { GameService.Load(ms.ToArray(), e.File.Name);
+            _ = Notification.Open(new NotificationConfig
+            {
+                Message = "Save loaded",
+                Description = e.File.Name,
+                NotificationType = NotificationType.Success
+            });
+            Navigation.NavigateTo("./"); }
         catch (GameNotLoadedException) { Navigation.NavigateTo("load"); }
     }
     private async Task ExportSaveAsync()
