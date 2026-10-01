@@ -16,8 +16,6 @@ jobs:
       - name: Checkout PokéSave Editor project
         uses: actions/checkout@v4
 
-      # Do NOT use the uploaded ZIP's empty external/ folders.
-      # Build from the upstream repository with its real, pinned submodules.
       - name: Checkout upstream PKHeX Everywhere with submodules
         uses: actions/checkout@v4
         with:
@@ -31,80 +29,67 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cp custom/src/PKHeX.Web/Pages/Home.razor _upstream/src/PKHeX.Web/Pages/Home.razor
+          cp custom/src/PKHeX.Web/Pages/Load.razor _upstream/src/PKHeX.Web/Pages/Load.razor
+          cp custom/src/PKHeX.Web/Layout/MainLayout.razor _upstream/src/PKHeX.Web/Layout/MainLayout.razor
+          cp custom/src/PKHeX.Web/wwwroot/index.html _upstream/src/PKHeX.Web/wwwroot/index.html
+          cp custom/src/PKHeX.Web/wwwroot/css/app.css _upstream/src/PKHeX.Web/wwwroot/css/app.css
+          cp custom/.htaccess _upstream/src/PKHeX.Web/wwwroot/.htaccess
 
-          cp custom/src/PKHeX.Web/Pages/Home.razor \
-             _upstream/src/PKHeX.Web/Pages/Home.razor
-
-          cp custom/src/PKHeX.Web/Pages/Load.razor \
-             _upstream/src/PKHeX.Web/Pages/Load.razor
-
-          cp custom/src/PKHeX.Web/Layout/MainLayout.razor \
-             _upstream/src/PKHeX.Web/Layout/MainLayout.razor
-
-          cp custom/src/PKHeX.Web/wwwroot/index.html \
-             _upstream/src/PKHeX.Web/wwwroot/index.html
-
-          cp custom/src/PKHeX.Web/wwwroot/css/app.css \
-             _upstream/src/PKHeX.Web/wwwroot/css/app.css
-
-          cp custom/.htaccess \
-             _upstream/src/PKHeX.Web/wwwroot/.htaccess
-
-      # The editor is deployed under /saveeditor/ rather than the domain root.
-      # Convert remaining absolute application URLs to paths relative to the
-      # Blazor base URI so loading a save does not send the user to /.
       - name: Configure /saveeditor/ base path
         working-directory: _upstream
         shell: bash
         run: |
           set -euo pipefail
-
           python3 - <<'PY'
-from pathlib import Path
+          from pathlib import Path
 
-files = [
-    Path("src/PKHeX.Web/Pages/EncounterSearch.razor"),
-    Path("src/PKHeX.Web/Components/LoadGameComponent.razor"),
-    Path("src/PKHeX.Web/Components/PlugIns/GenericPlugInFailureAlert.razor"),
-    Path("src/PKHeX.Web/Components/PkHexFooter.razor"),
-    Path("src/PKHeX.Web/Components/PrivacyPolicy/PrivacyPolicy_20250501.razor"),
-    Path("src/PKHeX.Web/Components/PrivacyPolicy/PrivacyPolicy_20241126.razor"),
-    Path("src/PKHeX.Web/Components/Auth/CloudPrivacyAgreementAction.razor"),
-    Path("src/PKHeX.Web/Services/Plugins/PlugInRuntime.razor"),
-    Path("src/PKHeX.Web/Extensions/NavigationManagerExtensions.cs"),
-]
+          files = [
+              Path("src/PKHeX.Web/Pages/EncounterSearch.razor"),
+              Path("src/PKHeX.Web/Components/LoadGameComponent.razor"),
+              Path("src/PKHeX.Web/Components/PlugIns/GenericPlugInFailureAlert.razor"),
+              Path("src/PKHeX.Web/Components/PkHexFooter.razor"),
+              Path("src/PKHeX.Web/Components/PrivacyPolicy/PrivacyPolicy_20250501.razor"),
+              Path("src/PKHeX.Web/Components/PrivacyPolicy/PrivacyPolicy_20241126.razor"),
+              Path("src/PKHeX.Web/Components/Auth/CloudPrivacyAgreementAction.razor"),
+              Path("src/PKHeX.Web/Services/Plugins/PlugInRuntime.razor"),
+              Path("src/PKHeX.Web/Extensions/NavigationManagerExtensions.cs"),
+          ]
 
-for path in files:
-    text = path.read_text(encoding="utf-8-sig")
-    text = text.replace('Navigation.NavigateTo("/")', 'Navigation.NavigateTo("./")')
-    text = text.replace('navigation.NavigateTo("/")', 'navigation.NavigateTo("./")')
-    text = text.replace('NavigateTo("/load"', 'NavigateTo("load"')
-    text = text.replace('NavigateTo("/items"', 'NavigateTo("items"')
-    text = text.replace('NavigateTo($"/pokemon/', 'NavigateTo($"pokemon/')
-    text = text.replace('NavigateTo($"/plugins/', 'NavigateTo($"plugins/')
-    text = text.replace('NavigateTo($"/analytics', 'NavigateTo($"analytics')
-    text = text.replace('NavigateTo($"/save', 'NavigateTo($"save')
-    text = text.replace('NavigateTo($"/settings', 'NavigateTo($"settings')
-    text = text.replace('NavigateTo($"/s/', 'NavigateTo($"s/')
-    text = text.replace('NavigateTo($"/cloud/', 'NavigateTo($"cloud/')
-    text = text.replace('NavigateTo($"/release-notes', 'NavigateTo($"release-notes')
-    text = text.replace('NavigateTo("/pokemon-box"', 'NavigateTo("pokemon-box"')
-    text = text.replace('NavigateTo("/pokemon/search-encounter"', 'NavigateTo("pokemon/search-encounter"')
-    text = text.replace('NavigateTo("/pokemon/selected-encounter"', 'NavigateTo("pokemon/selected-encounter"')
-    text = text.replace('NavigateTo("/pokemon/loaded-file"', 'NavigateTo("pokemon/loaded-file"')
-    text = text.replace('NavigateTo("/plugins/errors"', 'NavigateTo("plugins/errors"')
-    text = text.replace('NavigateTo("/plugins"', 'NavigateTo("plugins"')
-    text = text.replace('href="/', 'href="')
-    text = text.replace('GetByteArrayAsync("/data/', 'GetByteArrayAsync("data/')
-    path.write_text(text, encoding="utf-8")
+          for path in files:
+              text = path.read_text(encoding="utf-8-sig")
+              replacements = {
+                  'Navigation.NavigateTo("/")': 'Navigation.NavigateTo("./")',
+                  'navigation.NavigateTo("/")': 'navigation.NavigateTo("./")',
+                  'NavigateTo("/load"': 'NavigateTo("load"',
+                  'NavigateTo("/items"': 'NavigateTo("items"',
+                  'NavigateTo($"/pokemon/': 'NavigateTo($"pokemon/',
+                  'NavigateTo($"/plugins/': 'NavigateTo($"plugins/',
+                  'NavigateTo($"/analytics': 'NavigateTo($"analytics',
+                  'NavigateTo($"/save': 'NavigateTo($"save',
+                  'NavigateTo($"/settings': 'NavigateTo($"settings',
+                  'NavigateTo($"/s/': 'NavigateTo($"s/',
+                  'NavigateTo($"/cloud/': 'NavigateTo($"cloud/',
+                  'NavigateTo($"/release-notes': 'NavigateTo($"release-notes',
+                  'NavigateTo("/pokemon-box"': 'NavigateTo("pokemon-box"',
+                  'NavigateTo("/pokemon/search-encounter"': 'NavigateTo("pokemon/search-encounter"',
+                  'NavigateTo("/pokemon/selected-encounter"': 'NavigateTo("pokemon/selected-encounter"',
+                  'NavigateTo("/pokemon/loaded-file"': 'NavigateTo("pokemon/loaded-file"',
+                  'NavigateTo("/plugins/errors"': 'NavigateTo("plugins/errors"',
+                  'NavigateTo("/plugins"': 'NavigateTo("plugins"',
+                  'href="/': 'href="',
+                  'GetByteArrayAsync("/data/': 'GetByteArrayAsync("data/',
+              }
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              path.write_text(text, encoding="utf-8")
 
-index = Path("src/PKHeX.Web/wwwroot/index.html")
-text = index.read_text(encoding="utf-8-sig")
-text = text.replace('<base href="/"/>', '<base href="/saveeditor/"/>')
-text = text.replace('href="/favicon.svg"', 'href="favicon.svg"')
-index.write_text(text, encoding="utf-8")
-PY
-
+          index = Path("src/PKHeX.Web/wwwroot/index.html")
+          text = index.read_text(encoding="utf-8-sig")
+          text = text.replace('<base href="/"/>', '<base href="/saveeditor/"/>')
+          text = text.replace('href="/favicon.svg"', 'href="favicon.svg"')
+          index.write_text(text, encoding="utf-8")
+          PY
           echo "Configured Blazor base path: /saveeditor/"
 
       - name: Setup .NET 10
@@ -122,11 +107,9 @@ PY
         shell: bash
         run: |
           set -euo pipefail
-
           cd src/PKHeX.Web/_js
           npm ci
           npm run build
-
           cd ../_blog
           npm ci
           npm run build
@@ -142,10 +125,7 @@ PY
       - name: Publish website
         working-directory: _upstream
         run: |
-          dotnet publish \
-            src/PKHeX.Web/PKHeX.Web.csproj \
-            -c Release \
-            -o publish
+          dotnet publish src/PKHeX.Web/PKHeX.Web.csproj -c Release -o publish
 
       - name: Verify static website
         working-directory: _upstream
