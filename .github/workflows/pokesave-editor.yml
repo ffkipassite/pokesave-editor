@@ -1,0 +1,108 @@
+name: Build PokéSave Editor
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PokéSave Editor project
+        uses: actions/checkout@v4
+
+      # Do NOT use the uploaded ZIP's empty external/ folders.
+      # Build from the upstream repository with its real, pinned submodules.
+      - name: Checkout upstream PKHeX Everywhere with submodules
+        uses: actions/checkout@v4
+        with:
+          repository: arleypadua/PKHeX.Everywhere
+          ref: main
+          path: _upstream
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Apply PokéSave Editor UI
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cp custom/src/PKHeX.Web/Pages/Home.razor \
+             _upstream/src/PKHeX.Web/Pages/Home.razor
+
+          cp custom/src/PKHeX.Web/Pages/Load.razor \
+             _upstream/src/PKHeX.Web/Pages/Load.razor
+
+          cp custom/src/PKHeX.Web/Layout/MainLayout.razor \
+             _upstream/src/PKHeX.Web/Layout/MainLayout.razor
+
+          cp custom/src/PKHeX.Web/wwwroot/index.html \
+             _upstream/src/PKHeX.Web/wwwroot/index.html
+
+          cp custom/src/PKHeX.Web/wwwroot/css/app.css \
+             _upstream/src/PKHeX.Web/wwwroot/css/app.css
+
+          cp custom/.htaccess \
+             _upstream/src/PKHeX.Web/wwwroot/.htaccess
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build JavaScript assets
+        working-directory: _upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd src/PKHeX.Web/_js
+          npm ci
+          npm run build
+
+          cd ../_blog
+          npm ci
+          npm run build
+
+      - name: Restore .NET dependencies
+        working-directory: _upstream
+        run: dotnet restore
+
+      - name: Build
+        working-directory: _upstream
+        run: dotnet build --no-restore -c Release
+
+      - name: Publish website
+        working-directory: _upstream
+        run: |
+          dotnet publish \
+            src/PKHeX.Web/PKHeX.Web.csproj \
+            -c Release \
+            -o publish
+
+      - name: Verify static website
+        working-directory: _upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f publish/wwwroot/index.html
+          test -d publish/wwwroot/_framework
+          test -f publish/wwwroot/.htaccess
+          echo "PokéSave Editor website is ready."
+
+      - name: Upload DirectAdmin-ready website
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokesave-editor-site
+          path: _upstream/publish/wwwroot
+          if-no-files-found: error

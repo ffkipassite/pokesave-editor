@@ -1,0 +1,63 @@
+@page "/load"
+@layout EmptyLayout
+@inject NavigationManager Navigation
+@inject GameService GameService
+@inject JsService Js
+
+<PageTitle>Open Save File — PokéSave Editor</PageTitle>
+
+<div class="load-page">
+    <div class="load-card">
+        <div class="brand-mark">✦</div>
+        <span class="eyebrow">POKÉSAVE EDITOR</span>
+        <h1>Open your save file</h1>
+        <p>Select a supported Pokémon save file to start editing. Processing happens locally in your browser.</p>
+
+        <InputFile OnChange="LoadSave" @ref="_inputGameFile" class="hidden-file-input" />
+
+        <Button Type="@ButtonType.Primary"
+                Size="@ButtonSize.Large"
+                Icon="@IconType.Outline.FolderOpen"
+                OnClick="OpenFilePickerAsync">
+            Choose Save File
+        </Button>
+
+        <div class="load-help">
+            <span>Maximum file size: 6 MB</span>
+            <span>•</span>
+            <span>No account required</span>
+        </div>
+
+        <a href="/" class="back-link">← Back to home</a>
+    </div>
+</div>
+
+@code {
+    private InputFile _inputGameFile = default!;
+
+    protected override void OnInitialized()
+    {
+        if (GameService.IsLoaded)
+            Navigation.NavigateTo("/");
+    }
+
+    private async Task OpenFilePickerAsync()
+        => await Js.ClickOnAsync(_inputGameFile.Element);
+
+    private async Task LoadSave(InputFileChangeEventArgs e)
+    {
+        using MemoryStream ms = new();
+
+        try
+        {
+            await e.File.OpenReadStream(6 * 1024 * 1000).CopyToAsync(ms);
+            GameService.Load(ms.ToArray(), e.File.Name);
+            Navigation.NavigateTo("/");
+        }
+        catch (GameNotLoadedException)
+        {
+            // The global error boundary will handle unexpected errors; invalid files are
+            // intentionally not shown with implementation details.
+        }
+    }
+}

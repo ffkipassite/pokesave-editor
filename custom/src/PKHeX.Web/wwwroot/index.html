@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="theme-color" content="#0b1020"/>
+    <meta name="description" content="PokéSave Editor — edit supported Pokémon save files directly in your browser."/>
+    <meta name="robots" content="index, follow"/>
+    <meta property="og:title" content="PokéSave Editor"/>
+    <meta property="og:description" content="Edit supported Pokémon save files directly in your browser."/>
+    <meta property="og:type" content="website"/>
+    <title>PokéSave Editor</title>
+    <base href="/"/>
+    <link rel="stylesheet" href="css/app.css"/>
+    <link rel="stylesheet" href="css/antd-extensions.css"/>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <link href="PKHeX.Web.styles.css" rel="stylesheet"/>
+</head>
+<body>
+    <div id="app" style="height: 100%">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%"/>
+            <circle r="40%" cx="50%" cy="50%"/>
+        </svg>
+        <div class="loading-progress-text"></div>
+        <div style="display: flex; flex-direction: column; gap: 10px; justify-items: center; margin-top: 5px; width: 100%;">
+            <div class="loading-text">Loading...</div>
+            <h1 class="loading-text">PKHeX for Web - A Cross-Platform Pokémon Save File Editor</h1>
+        </div>
+    </div>
+    
+    <div id="blazor-error-ui">
+        An unhandled error has occurred. Try reloading the page, if the error persists, try cleaning your browser cache.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">x</a>
+    </div>
+
+    <script src="js/pkhex-web.js.iife.js"></script>
+
+    <script src="_content/AntDesign.Charts/g2plot.min.js"></script>
+    <script src="_content/AntDesign.Charts/ant-design-charts-blazor.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/TG.Blazor.IndexedDB/indexedDb.Blazor.js"></script>
+    <script src="_content/Blazor-Analytics/blazor-analytics.js"></script>
+</body>
+
+</html>

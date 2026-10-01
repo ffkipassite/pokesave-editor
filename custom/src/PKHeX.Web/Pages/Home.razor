@@ -1,0 +1,109 @@
+﻿@page "/"
+@using PKHeX.Core
+@using PKHeX.Core
+@inject GameService GameService
+@inject NavigationManager Navigation
+@inject JsService Js
+
+<PageTitle>PokéSave Editor</PageTitle>
+
+@if (!GameService.IsLoaded)
+{
+    <section class="editor-hero">
+        <div class="brand-mark">✦</div>
+        <span class="eyebrow">BROWSER-BASED SAVE EDITOR</span>
+        <h1>PokéSave Editor</h1>
+        <p>Edit supported Pokémon save files directly in your browser. Your save file is processed locally and is not uploaded to a server.</p>
+        <Button Type="@ButtonType.Primary" Size="@ButtonSize.Large" Icon="@IconType.Outline.FolderOpen" OnClick="OpenFilePickerAsync">
+            Open Save File
+        </Button>
+        <InputFile OnChange="LoadSave" @ref="_inputGameFile" class="hidden-file-input" />
+        <div class="hero-points">
+            <span>✓ Browser based</span>
+            <span>✓ No account required</span>
+            <span>✓ Export your edited save</span>
+        </div>
+    </section>
+}
+else
+{
+    var game = GameService.LoadedGame;
+    <div class="editor-dashboard">
+        <section class="dashboard-header">
+            <div>
+                <span class="eyebrow">SAVE LOADED</span>
+                <h1>@GameService.FileName</h1>
+                <p>@game.GameVersionApproximation.Name</p>
+            </div>
+            <div class="dashboard-actions">
+                <Button Type="@ButtonType.Primary" Icon="@IconType.Outline.Export" OnClick="ExportSaveAsync">Download Save</Button>
+                <Button Icon="@IconType.Outline.FolderOpen" OnClick="OpenFilePickerAsync">Open Another</Button>
+            </div>
+        </section>
+
+        <InputFile OnChange="LoadSave" @ref="_inputGameFile" class="hidden-file-input" />
+
+        <section class="editor-grid">
+            <a class="editor-card" href="/party">
+                <div class="card-icon">👥</div>
+                <div><strong>Party</strong><span>Edit your active Pokémon party</span></div>
+                <b>→</b>
+            </a>
+            <a class="editor-card" href="/pokemon-box">
+                <div class="card-icon">📦</div>
+                <div><strong>Pokémon Boxes</strong><span>Browse and edit stored Pokémon</span></div>
+                <b>→</b>
+            </a>
+            <a class="editor-card" href="/items">
+                <div class="card-icon">🎒</div>
+                <div><strong>Items</strong><span>Manage your save inventory</span></div>
+                <b>→</b>
+            </a>
+        </section>
+
+        <section class="trainer-panel">
+            <div>
+                <span class="panel-label">TRAINER</span>
+                <strong>@game.Trainer.Name</strong>
+            </div>
+            <div><span class="panel-label">TID / SID</span><strong>@game.Trainer.Id</strong></div>
+            <div><span class="panel-label">MONEY</span><strong>@game.Trainer.Money.Amount.ToString("N0")</strong></div>
+            <div><span class="panel-label">FILE</span><strong>@GameService.FileName</strong></div>
+        </section>
+
+        <div class="privacy-note">
+            <span>🔒</span>
+            <div><strong>Your save stays in your browser</strong><br />The editor works with the file in your browser and provides the modified file back to you for download.</div>
+        </div>
+    </div>
+}
+
+@code {
+    private InputFile _inputGameFile = default!;
+
+    private async Task OpenFilePickerAsync()
+        => await Js.ClickOnAsync(_inputGameFile.Element);
+
+    private async Task LoadSave(InputFileChangeEventArgs e)
+    {
+        using MemoryStream ms = new();
+        await e.File.OpenReadStream(6 * 1024 * 1000).CopyToAsync(ms);
+
+        try
+        {
+            GameService.Load(ms.ToArray(), e.File.Name);
+            Navigation.NavigateTo("/");
+        }
+        catch (GameNotLoadedException)
+        {
+            Navigation.NavigateTo("/load");
+        }
+    }
+
+    private async Task ExportSaveAsync()
+    {
+        if (!GameService.IsLoaded) return;
+        var stream = GameService.Export();
+        await Js.DownloadFile(stream, GameService.FileName ?? "edited-save.sav");
+    }
+}

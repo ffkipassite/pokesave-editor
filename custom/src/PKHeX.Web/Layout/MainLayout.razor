@@ -1,0 +1,55 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject GameService GameService
+
+<div class="app-shell">
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="brand-symbol">✦</span>
+            <span>PokéSave <em>Editor</em></span>
+        </a>
+
+        @if (GameService.IsLoaded)
+        {
+            <nav class="topnav">
+                <a href="/">Overview</a>
+                <a href="/party">Party</a>
+                <a href="/pokemon-box">Boxes</a>
+                <a href="/items">Items</a>
+                <a href="/load">Open</a>
+            </nav>
+        }
+
+        <div class="topbar-spacer"></div>
+        <a class="github-link" href="https://github.com/arleypadua/PKHeX.Everywhere" target="_blank" rel="noopener">Source</a>
+    </header>
+
+    <main class="app-content">
+        <AnalyticsAwareErrorBoundary @ref="_errorBoundary">
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent>
+                <div class="editor-error">
+                    <h2>Something went wrong</h2>
+                    <p>The editor could not complete that operation. Try reopening the save file.</p>
+                    <button @onclick="DismissError">Dismiss</button>
+                </div>
+            </ErrorContent>
+        </AnalyticsAwareErrorBoundary>
+    </main>
+
+    <footer class="app-footer">
+        <span>PokéSave Editor</span>
+        <span>Browser-based Pokémon save editing</span>
+    </footer>
+</div>
+
+@code {
+    private AnalyticsAwareErrorBoundary _errorBoundary = default!;
+
+    private void DismissError() => _errorBoundary.Recover();
+
+    public void Dispose() { }
+}
