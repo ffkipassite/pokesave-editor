@@ -95,9 +95,9 @@ jobs:
           index.write_text(text, encoding="utf-8")
           PY
           echo "Configured Blazor base path: relative ./ (auto-detects install folder)"
-          grep -q "href="plugins"" ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
-          grep -q "href="analytics"" ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
-          grep -q "href="save"" ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
+          grep -q 'href="plugins"' ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
+          grep -q 'href="analytics"' ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
+          grep -q 'href="save"' ../_upstream/src/PKHeX.Web/Layout/MainLayout.razor
           echo "Verified Plugins, Analytics and Save navigation."
 
       - name: Setup .NET 10
